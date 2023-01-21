@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="module" src="/script.js"></script>
+    <link type="text/css" rel="stylesheet" href="/main.css">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@100&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- <input type="text" name="" id="text-input">
+    <input type="button" value="submit" id="submit-btn-main">
+
+    <div id="msg-container">
+        <li>hello</li>
+    </div> -->
+    <div class="idContainer">
+        <span>Your chat id is :</span>
+        <span id="id-text"></span>
+        <button class="copy-btn">Copy</button>
+    </div>
+    <div class="container">
+        <div class="msgContainer">
+            <div class="msgBox leftMsgBox">
+                <span class="userLable">username</span>
+                <div class="msgBody">
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus voluptate laudantium error ut corrupti doloremque modi, atque quaerat aspernatur qui.</p>
+                </div>
+            </div>
+            <div class="msgBox rightMsgBox">
+                <span class="userLable">username</span>
+                <div class="msgBody">
+                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Doloribus voluptate laudantium error ut corrupti doloremque modi, atque quaerat aspernatur qui.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="inputContainer">
+            <input type="text" name="" id="text-input" placeholder="Enter the message">
+            <button id="submit-text">
+                <span class="material-symbols-outlined">
+                    send
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+</body>
+</html>
