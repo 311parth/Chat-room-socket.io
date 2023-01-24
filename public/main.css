@@ -16,22 +16,24 @@ body{
     height: 83vh;
     background: #212529;
     padding-left: 2rem;
-    padding-top: 1rem;
     display:inline-block;
 }
 .leftMsgBox{
     float: left;
     clear: both;
+    margin-top: 1rem;
 }
 .rightMsgBox{
     float: right;
     clear: both;
+    margin-top: 1rem;
 }
 .msgBox{
     width: fit-content;
     max-width: 20rem;
     height: fit-content;
-    margin-top: 1rem;
+    
+    /* margin-top: 1rem; */
 }
 .msgBody{
     background:#7269ef;
@@ -40,7 +42,10 @@ body{
     border-bottom-right-radius: 10px;
     border-top-left-radius: 5px;
     border-top-right-radius: 10px;
-    padding: 1px;
+    padding:0.2rem 0.7rem;
+}
+.newJoinedMsg{
+    margin-top: 1rem;
 }
 .newJoinedMsg .msgBody{
     background: tomato;
@@ -65,7 +70,7 @@ body{
     align-items: center;
     border-top: 0.5px solid white;
 }
-#text-input{
+#text-msg-input{
     width: 90vh;
     height: 2.5rem;
     border-radius: 5px;
@@ -77,7 +82,7 @@ body{
     outline: none;
     font-family: 'Public Sans', sans-serif;
 }
-#submit-text{
+#submit-msg{
     height: 3rem;
     width: 3rem;
     border-radius: 7px;

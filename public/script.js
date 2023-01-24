@@ -3,8 +3,8 @@ const socket = io();
 // console.log("jh")
 // console.log(socket)
 socket.on("connect",()=>{
-    console.log(socket)
-    // console.log(socket.id)
+    // console.log(socket)
+    console.log(socket.id)
     // console.log(socket.connected)
 })
 
@@ -12,6 +12,7 @@ var inputUsername = document.getElementById("input-username")
 var username ;
 inputUsername && inputUsername.addEventListener("change",()=>{
     username = inputUsername.value;
+    sessionStorage.setItem("username", inputUsername.value);
     // console.log("us :",inputUsername.value,typeof(username))
 })
 
@@ -46,6 +47,7 @@ if(copyBtn){
         copyBtn.innerText = "copied"
     })
 }
+
 const newRoomBtn = document.getElementById("new-room-btn");
 if(newRoomBtn){
     newRoomBtn.addEventListener("click",()=>{
@@ -53,10 +55,13 @@ if(newRoomBtn){
             alert("enter username")
             return;
         }
+        //TODO: use jwt to varify the username
+
+        // localStorage.setItem("username", inputUsername.value);
         socket.emit("getNewRoom","");//to create new room 
         socket.on("redirectionToNewRoom",(args)=>{ //it will return room url for new room
             // console.log(args)
-            window.location.pathname=args;   
+            window.location.pathname=args;
         })
     })
 }
@@ -77,7 +82,27 @@ if(joinRoomBtn){
     })
 }
 
-// socket.on("redirectionToNewRoom",(args)=>{
-//     console.log(args)
-// })
+const submitMsg = document.getElementById("submit-msg")
+
+submitMsg && submitMsg.addEventListener("click",()=>{
+    // const usernameLocalStored = localStorage.getItem("username");
+    const usernameLocalStored = sessionStorage.getItem("username");
+    const currentRoomId = window.location.pathname.toString().substr(-6,6);
+    const textMsgInput = document.getElementById("text-msg-input").value;
+    // console.log(textMsgInput)
+    socket.emit("send-msg",{username:usernameLocalStored,msg:textMsgInput,roomid:currentRoomId})
+})
+
+const newRightMsgBox = (msgData)=> `<div class="msgBox leftMsgBox">
+<span class="userLable">${msgData.username}</span>
+<div class="msgBody">
+    <p>${msgData.msg}</p>
+</div>
+</div>`
+
+socket.on("newMsg",(args)=>{
+    // console.log(args)
+    if(msgContainer) msgContainer.innerHTML+=newRightMsgBox(args)
+
+})
 

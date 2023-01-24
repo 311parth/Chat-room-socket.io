@@ -12,15 +12,6 @@ httpServer.listen(PORT,()=>{
 
 
 var currentRunningId = ["1"];
-    // const uid = randomId(6);
-    // if(currentRunningId.includes(uid)){
-    //     console.log("yes")
-    // }else
-    // {
-    //     currentRunningId.push(uid)
-    //     console.log("no")
-    // }
-    // console.log(currentRunningId)
 
 app.use(express.static("public"))
 app.use(express.json())
@@ -41,17 +32,6 @@ const getUid = ()=>{
         return uid;
     }
 }
-// console.log(getUid())
-
-// app.get("/newroom",(req,res)=>{
-//     const uid= getUid();
-//     // console.log(uid)
-//     // console.log(currentRunningId)
-//     io.on("connection", (socket) => {
-//         socket.join(uid);
-//     });
-//     res.redirect(`/room/id/${uid}`)
-// })
 
 
 app.get("/room/id/:id",(req,res)=>{
@@ -62,23 +42,6 @@ app.get("/room/id/:id",(req,res)=>{
     }
 })
 
-// app.post("/redirect/chatroom",(req,res)=>{
-//     // console.log(currentRunningId)
-//     var newJoinedUsername = req.body.username;
-//     const roomId = req.body.roomid;
-//     if(currentRunningId.includes(roomId)){
-//         io.on("connection",(socket)=>{
-//             // console.log("connected",socket.id)
-//             socket.join(roomId);
-//             // socket.broadcast.emit("newJoined",newJoinedUsername)
-//             io.to(roomId).timeout(1000).emit("newJoined",newJoinedUsername);
-//             console.log("emited",newJoinedUsername)
-//         })
-//         res.json({"isok":1})
-//     }else{
-//         res.json({"isok":0});
-//     }
-// })
 const io = require("socket.io")(httpServer)
 
 io.on("connection",(socket)=>{
@@ -104,6 +67,11 @@ io.on("connection",(socket)=>{
         }else{
             socket.emit("joinRoomReqResponse",{success:0,roomid:req.reqid})
         }
+    })
+
+    socket.on("send-msg",(args)=>{
+        // console.log(args)
+        socket.broadcast.to(args.roomid).emit('newMsg', args);
     })
 
 })
