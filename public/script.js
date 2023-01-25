@@ -19,6 +19,7 @@ inputUsername && inputUsername.addEventListener("change",()=>{
 
 
 
+
 const uid = window.location.pathname.toString().substr(-6,6);
 
 const idTextElement = document.getElementById("id-text");
@@ -50,7 +51,7 @@ if(copyBtn){
 
 const newRoomBtn = document.getElementById("new-room-btn");
 if(newRoomBtn){
-    newRoomBtn.addEventListener("click",()=>{
+    newRoomBtn.addEventListener("click",async()=>{
         if(inputUsername.value===""){
             alert("enter username")
             return;
@@ -58,10 +59,40 @@ if(newRoomBtn){
         //TODO: use jwt to varify the username
 
         // localStorage.setItem("username", inputUsername.value);
-        socket.emit("getNewRoom","");//to create new room 
-        socket.on("redirectionToNewRoom",(args)=>{ //it will return room url for new room
-            // console.log(args)
-            window.location.pathname=args;
+        
+        const usernameTokenPromise = new Promise(function(myResolve, myReject) {
+            socket.emit("getAuth",{username:username})
+            socket.on("resAuth",(args)=>{
+                // console.log(args);
+                sessionStorage.setItem("usernameToken",args)
+                myResolve();
+            })
+        });
+            
+        
+        usernameTokenPromise.then(()=>{
+            const sessionUsername=sessionStorage.getItem("username");
+            const sessionUsernameToken = sessionStorage.getItem("usernameToken");
+                socket.emit("verifyToken",{
+                    username:sessionUsername,
+                    usernameToken : sessionUsernameToken
+                });
+                socket.on("isAuth",(args)=>{
+                    if(args){
+                        console.log("fine")
+                    }else{
+                        alert("username session is corrupted")
+                    }
+                })
+                socket.on("resVerifyToken",(args)=>{
+                    // console.log(args);
+                    sessionStorage.setItem("username",args.username)
+                })
+            socket.emit("getNewRoom","");//to create new room 
+            socket.on("redirectionToNewRoom",(args)=>{ //it will return room url for new room
+                // console.log(args)
+                window.location.pathname=args;
+        })
         })
     })
 }
@@ -81,28 +112,42 @@ if(joinRoomBtn){
         })
     })
 }
-
-const submitMsg = document.getElementById("submit-msg")
-
-submitMsg && submitMsg.addEventListener("click",()=>{
-    // const usernameLocalStored = localStorage.getItem("username");
-    const usernameLocalStored = sessionStorage.getItem("username");
-    const currentRoomId = window.location.pathname.toString().substr(-6,6);
-    const textMsgInput = document.getElementById("text-msg-input").value;
-    // console.log(textMsgInput)
-    socket.emit("send-msg",{username:usernameLocalStored,msg:textMsgInput,roomid:currentRoomId})
-})
-
-const newRightMsgBox = (msgData)=> `<div class="msgBox leftMsgBox">
+const newRightMsgBox = (msgData,typeClass)=> `<div class="msgBox ${typeClass}">
 <span class="userLable">${msgData.username}</span>
 <div class="msgBody">
     <p>${msgData.msg}</p>
 </div>
 </div>`
 
+const submitMsg = document.getElementById("submit-msg")
+submitMsg && submitMsg.addEventListener("click",()=>{
+    // const usernameLocalStored = localStorage.getItem("username");
+    const usernameLocalStored = sessionStorage.getItem("username");
+    const currentRoomId = window.location.pathname.toString().substr(-6,6);
+    const textMsgInput = document.getElementById("text-msg-input");
+    // console.log(textMsgInput)
+    var flagCorrept=0;
+    socket.emit("send-msg",{username:usernameLocalStored,msg:textMsgInput.value,roomid:currentRoomId,usernameToken:sessionStorage.getItem("usernameToken")})
+    socket.on("corrupt-username",(args)=>{
+        flagCorrept=1;
+        alert(args);
+        window.location = "/";
+    })
+    if(!flagCorrept){
+        const msgData = {
+            username:usernameLocalStored,
+            msg:textMsgInput.value
+        }
+        if(msgContainer) msgContainer.innerHTML+=newRightMsgBox(msgData,"rightMsgBox")
+    }
+    msgContainer.scrollTop = msgContainer.scrollHeight;//to auto scroll-down
+    textMsgInput.value="";//to clear input
+    textMsgInput.focus();//to auto focus on input after submit 
+})
+
 socket.on("newMsg",(args)=>{
     // console.log(args)
-    if(msgContainer) msgContainer.innerHTML+=newRightMsgBox(args)
-
+    if(msgContainer) msgContainer.innerHTML+=newRightMsgBox(args,"leftMsgBox")
+    msgContainer.scrollTop = msgContainer.scrollHeight;//to auto scroll-down
 })
 

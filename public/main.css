@@ -12,11 +12,17 @@ body{
     margin: auto;
 }
 .msgContainer{
-    width: 90%;
+    width: 95%;
     height: 83vh;
     background: #212529;
+    overflow-y: scroll;
     padding-left: 2rem;
+    padding-right: 2rem;
     display:inline-block;
+}
+::-webkit-scrollbar{
+    width: 2px;
+    background: #eff2f7;
 }
 .leftMsgBox{
     float: left;

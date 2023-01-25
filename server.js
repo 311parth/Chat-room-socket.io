@@ -8,6 +8,13 @@ const PORT = 3000;
 httpServer.listen(PORT,()=>{
     console.log("httpServer is running on ",PORT)
 })
+var jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+// get config vars
+dotenv.config();
+
+const bcrypt = require("bcrypt");
+const salt = 9999;
 
 
 
@@ -51,6 +58,28 @@ io.on("connection",(socket)=>{
         }
     })
     console.log("connected",socket.id)
+
+    //Auth for new room creator
+    socket.on("getAuth",(args)=>{
+        // console.log(args);
+        const token = jwt.sign({ username: args.username }, process.env.TOKEN_SECRET, {
+            expiresIn: "7d",
+        });
+        socket.emit("resAuth",token);
+    })
+    //TODO: make simple jwt 
+    //to verify token
+    socket.on("verifyToken",(args)=>{
+        // console.log(args)
+        const verify_jwt = jwt.verify(args.usernameToken, process.env.TOKEN_SECRET);
+        if(verify_jwt.username===args.username){//if session variable of client : username and token is correct then only grant auth 
+            socket.emit("isAuth",1)
+            socket.emit("resVerifyToken",verify_jwt);
+        }else{
+            socket.emit("isAuth",0);
+        }
+    })
+
     socket.on("getNewRoom",()=>{
         const uid= getUid();
         socket.join(uid);
@@ -71,7 +100,16 @@ io.on("connection",(socket)=>{
 
     socket.on("send-msg",(args)=>{
         // console.log(args)
-        socket.broadcast.to(args.roomid).emit('newMsg', args);
+        const verify_jwt = jwt.verify(args.usernameToken, process.env.TOKEN_SECRET);
+        if(verify_jwt.username===args.username){//if session variable of client : username and token is correct then only grant auth 
+            socket.broadcast.to(args.roomid).emit('newMsg', args);
+        }else{
+            socket.emit("corrupt-username","username is corrupted")
+        }
+        
     })
 
 })
+
+
+
