@@ -4,7 +4,7 @@ const socket = io();
 // console.log(socket)
 socket.on("connect",()=>{
     // console.log(socket)
-    console.log(socket.id)
+    // console.log(socket.id)
     // console.log(socket.connected)
 })
 
@@ -15,8 +15,6 @@ inputUsername && inputUsername.addEventListener("change",()=>{
     sessionStorage.setItem("username", inputUsername.value);
     // console.log("us :",inputUsername.value,typeof(username))
 })
-
-
 
 
 
@@ -49,9 +47,47 @@ if(copyBtn){
     })
 }
 
+const auth =()=>{
+    const usernameTokenPromise = new Promise(function(myResolve, myReject) {
+        // console.log(username)
+        socket.emit("getAuth",{username:username})
+        socket.on("resAuth",(args)=>{
+            // console.log(args);
+            sessionStorage.setItem("usernameToken",args)
+            myResolve();
+        })
+    });
+    
+    usernameTokenPromise.then(()=>{
+        const sessionUsername=sessionStorage.getItem("username");
+        const sessionUsernameToken = sessionStorage.getItem("usernameToken");
+            socket.emit("verifyToken",{
+                username:sessionUsername,
+                usernameToken : sessionUsernameToken
+            });
+            // console.log(username,sessionUsernameToken)
+            socket.on("isAuth",(args)=>{
+                if(args){
+                    // console.log("fine")
+                }else{
+                    alert("username session is corrupted")
+                }
+            })
+            socket.on("resVerifyToken",(args)=>{
+                // console.log(args);
+                sessionStorage.setItem("username",args.username)
+            })
+        });
+
+}
+  
+
+    
 const newRoomBtn = document.getElementById("new-room-btn");
 if(newRoomBtn){
     newRoomBtn.addEventListener("click",async()=>{
+        auth();
+
         if(inputUsername.value===""){
             alert("enter username")
             return;
@@ -60,41 +96,13 @@ if(newRoomBtn){
 
         // localStorage.setItem("username", inputUsername.value);
         
-        const usernameTokenPromise = new Promise(function(myResolve, myReject) {
-            socket.emit("getAuth",{username:username})
-            socket.on("resAuth",(args)=>{
-                // console.log(args);
-                sessionStorage.setItem("usernameToken",args)
-                myResolve();
-            })
-        });
-            
         
-        usernameTokenPromise.then(()=>{
-            const sessionUsername=sessionStorage.getItem("username");
-            const sessionUsernameToken = sessionStorage.getItem("usernameToken");
-                socket.emit("verifyToken",{
-                    username:sessionUsername,
-                    usernameToken : sessionUsernameToken
-                });
-                socket.on("isAuth",(args)=>{
-                    if(args){
-                        console.log("fine")
-                    }else{
-                        alert("username session is corrupted")
-                    }
-                })
-                socket.on("resVerifyToken",(args)=>{
-                    // console.log(args);
-                    sessionStorage.setItem("username",args.username)
-                })
             socket.emit("getNewRoom","");//to create new room 
             socket.on("redirectionToNewRoom",(args)=>{ //it will return room url for new room
                 // console.log(args)
                 window.location.pathname=args;
         })
         })
-    })
 }
 
 
@@ -102,6 +110,7 @@ if(newRoomBtn){
 const joinRoomBtn = document.getElementById("join-room-btn");
 if(joinRoomBtn){
     joinRoomBtn.addEventListener("click",()=>{
+        auth();
         const inputedId = document.getElementById("input-join-id").value;
         socket.emit("joinRoomReq",{reqid : inputedId,username : username})
         socket.on("joinRoomReqResponse",(resRoomReq)=>{
@@ -123,11 +132,13 @@ const submitMsg = document.getElementById("submit-msg")
 submitMsg && submitMsg.addEventListener("click",()=>{
     // const usernameLocalStored = localStorage.getItem("username");
     const usernameLocalStored = sessionStorage.getItem("username");
+    const  usernameToken= sessionStorage.getItem("usernameToken");
+
     const currentRoomId = window.location.pathname.toString().substr(-6,6);
     const textMsgInput = document.getElementById("text-msg-input");
     // console.log(textMsgInput)
     var flagCorrept=0;
-    socket.emit("send-msg",{username:usernameLocalStored,msg:textMsgInput.value,roomid:currentRoomId,usernameToken:sessionStorage.getItem("usernameToken")})
+    socket.emit("send-msg",{username:usernameLocalStored,msg:textMsgInput.value,roomid:currentRoomId,usernameToken:usernameToken})
     socket.on("corrupt-username",(args)=>{
         flagCorrept=1;
         alert(args);

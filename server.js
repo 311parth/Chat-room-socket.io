@@ -18,7 +18,7 @@ const salt = 9999;
 
 
 
-var currentRunningId = ["1"];
+var currentRunningId = [];
 
 app.use(express.static("public"))
 app.use(express.json())
@@ -65,6 +65,7 @@ io.on("connection",(socket)=>{
         const token = jwt.sign({ username: args.username }, process.env.TOKEN_SECRET, {
             expiresIn: "7d",
         });
+        // console.log(token)
         socket.emit("resAuth",token);
     })
     //TODO: make simple jwt 
@@ -100,11 +101,15 @@ io.on("connection",(socket)=>{
 
     socket.on("send-msg",(args)=>{
         // console.log(args)
-        const verify_jwt = jwt.verify(args.usernameToken, process.env.TOKEN_SECRET);
-        if(verify_jwt.username===args.username){//if session variable of client : username and token is correct then only grant auth 
-            socket.broadcast.to(args.roomid).emit('newMsg', args);
-        }else{
-            socket.emit("corrupt-username","username is corrupted")
+        try {
+            const verify_jwt = jwt.verify(args.usernameToken, process.env.TOKEN_SECRET);
+            if(verify_jwt.username===args.username){//if session variable of client : username and token is correct then only grant auth 
+                socket.broadcast.to(args.roomid).emit('newMsg', args);
+            }else{
+                socket.emit("corrupt-username","username is corrupted")
+            }
+        } catch (error) {
+            console.log(error);
         }
         
     })
